@@ -79,7 +79,7 @@ def create_control_ui(deformer_node, wave_node):
     cmds.separator(height=10)
 
     cmds.floatSliderGrp('offsetSlider',
-                       label='Offset',
+                       label='Offset (Normal)',
                        field=True,
                        minValue=-5.0,
                        maxValue=5.0,
@@ -87,6 +87,26 @@ def create_control_ui(deformer_node, wave_node):
                        step=0.01,
                        changeCommand=lambda val: cmds.setAttr(
                            f'{deformer_node}.offset', val))
+
+    cmds.floatSliderGrp('offsetYSlider',
+                       label='Offset Y (Up)',
+                       field=True,
+                       minValue=-5.0,
+                       maxValue=5.0,
+                       value=0.0,
+                       step=0.01,
+                       changeCommand=lambda val: cmds.setAttr(
+                           f'{deformer_node}.offsetY', val))
+
+    cmds.intSliderGrp('divisionsSlider',
+                     label='Lattice Divisions',
+                     field=True,
+                     minValue=2,
+                     maxValue=20,
+                     value=5,
+                     step=1,
+                     changeCommand=lambda val: cmds.setAttr(
+                         f'{deformer_node}.divisions', val))
 
     cmds.floatSliderGrp('envelopeSlider',
                        label='Envelope',

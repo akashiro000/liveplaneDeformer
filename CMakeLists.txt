@@ -56,7 +56,7 @@ find_library(MAYA_OpenMayaAnim_LIBRARY OpenMayaAnim PATHS ${MAYA_LIBRARY_DIR} NO
 # Source files
 set(SOURCE_FILES
     src/livePlaneDeformer.cpp
-    src/pluginMain.cpp
+    src/livePlaneDeformer_lattice_functions.cpp
 )
 
 # Include directories

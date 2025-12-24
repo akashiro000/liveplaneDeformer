@@ -43,3 +43,6 @@ Makefile
 # OS
 .DS_Store
 Thumbs.db
+
+# Local build scripts
+*_local.bat

@@ -12,7 +12,8 @@
 #include <maya/MFnNumericAttribute.h>
 #include <maya/MFnTypedAttribute.h>
 #include <maya/MFnMesh.h>
-#include <maya/MMeshIntersector.h>
+#include <maya/MDagPath.h>
+#include <maya/MBoundingBox.h>
 
 class LivePlaneDeformer : public MPxDeformerNode
 {
@@ -34,14 +35,33 @@ public:
 
     // Attributes
     static MObject aTargetMesh;      // Target mesh to conform to
-    static MObject aOffset;          // Offset distance from target surface
+    static MObject aOffset;          // Offset distance from target surface (normal direction)
+    static MObject aOffsetY;         // Offset distance in Y axis (up direction)
+    static MObject aDivisions;       // Lattice divisions (resolution)
     static MObject aEnvelope;        // Deformer envelope (inherited but we'll use it)
 
 private:
-    MStatus getClosestPoint(const MPoint& point,
-                           const MFnMesh& targetMesh,
-                           MPoint& closestPoint,
-                           MVector& normal);
+    MStatus getClosestPointWithNormal(const MPoint& point,
+                                      const MFnMesh& targetMesh,
+                                      MPoint& closestPoint,
+                                      MVector& normal);
+
+    // Lattice-based deformation helpers
+    void createLattice(const MBoundingBox& bbox,
+                      int divisions,
+                      MPointArray& latticePoints);
+
+    void deformLattice(const MPointArray& originalLattice,
+                      MFnMesh& targetMesh,
+                      double offsetValue,
+                      double offsetYValue,
+                      MPointArray& deformedLattice);
+
+    MPoint deformPointByLattice(const MPoint& point,
+                               const MBoundingBox& bbox,
+                               int divisions,
+                               const MPointArray& originalLattice,
+                               const MPointArray& deformedLattice);
 };
 
 #endif // LIVE_PLANE_DEFORMER_H
