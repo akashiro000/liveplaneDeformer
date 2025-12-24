@@ -1,0 +1,91 @@
+// livePlaneDeformer Example Usage Script
+// This script demonstrates how to use the livePlaneDeformer plugin
+
+// Clean up existing objects
+if (`objExists sourceMesh`) delete sourceMesh;
+if (`objExists targetMesh`) delete targetMesh;
+if (`objExists wave1`) delete wave1;
+
+// Create a sphere as the source mesh
+polySphere -n "sourceMesh" -r 2 -sx 20 -sy 20;
+move 0 0 0 sourceMesh;
+
+// Create a plane as the target mesh
+polyPlane -n "targetMesh" -w 10 -h 10 -sx 30 -sy 30;
+move 0 -2 0 targetMesh;
+
+// Add a wave deformer to the target mesh to create surface variation
+select -r targetMesh;
+string $wave[] = `nonLinear -type wave`;
+setAttr ($wave[0] + ".amplitude") 0.5;
+setAttr ($wave[0] + ".wavelength") 2;
+
+// Apply the livePlaneDeformer to the source mesh
+select -r sourceMesh;
+string $deformer[] = `deformer -type "livePlaneDeformer"`;
+string $deformerName = $deformer[0];
+
+// Connect the target mesh to the deformer
+connectAttr -f (targetMesh + ".worldMesh[0]") ($deformerName + ".targetMesh");
+
+// Set initial offset
+setAttr ($deformerName + ".offset") 0.0;
+
+// Create a simple UI to control the deformer
+if (`window -exists livePlaneDeformerUI`) deleteUI livePlaneDeformerUI;
+
+window -title "Live Plane Deformer Controls" -widthHeight 300 150 livePlaneDeformerUI;
+columnLayout -adjustableColumn true;
+
+text -label "Deformer Controls" -font "boldLabelFont";
+separator -height 10;
+
+floatSliderGrp -label "Offset"
+               -field true
+               -minValue -5.0
+               -maxValue 5.0
+               -value 0.0
+               -step 0.01
+               -changeCommand ("setAttr " + $deformerName + ".offset #1")
+               offsetSlider;
+
+floatSliderGrp -label "Envelope"
+               -field true
+               -minValue 0.0
+               -maxValue 1.0
+               -value 1.0
+               -step 0.01
+               -changeCommand ("setAttr " + $deformerName + ".envelope #1")
+               envelopeSlider;
+
+separator -height 10;
+
+text -label "Wave Deformer Controls" -font "boldLabelFont";
+separator -height 10;
+
+floatSliderGrp -label "Amplitude"
+               -field true
+               -minValue 0.0
+               -maxValue 2.0
+               -value 0.5
+               -step 0.01
+               -changeCommand ("setAttr " + $wave[0] + ".amplitude #1")
+               amplitudeSlider;
+
+floatSliderGrp -label "Wavelength"
+               -field true
+               -minValue 0.5
+               -maxValue 5.0
+               -value 2.0
+               -step 0.1
+               -changeCommand ("setAttr " + $wave[0] + ".wavelength #1")
+               wavelengthSlider;
+
+showWindow livePlaneDeformerUI;
+
+// Select and frame all objects
+select -r sourceMesh targetMesh;
+viewFit -all;
+
+print "livePlaneDeformer example setup complete!\n";
+print ("Deformer node: " + $deformerName + "\n");
