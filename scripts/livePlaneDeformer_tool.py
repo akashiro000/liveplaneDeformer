@@ -119,6 +119,7 @@ class LivePlaneDeformerTool:
         cmds.setParent('..')
         cmds.setParent('..')
 
+        # Return to tab layout parent
         cmds.setParent('..')
 
     def _create_parameters_tab(self):
@@ -218,6 +219,9 @@ class LivePlaneDeformerTool:
         cmds.setParent('..')
         cmds.setParent('..')
 
+        # Return to tab layout parent
+        cmds.setParent('..')
+
     def _create_info_tab(self):
         """Create the info tab"""
         self.info_tab = cmds.columnLayout(adjustableColumn=True, rowSpacing=10)
@@ -278,6 +282,9 @@ class LivePlaneDeformerTool:
         cmds.text(label="Version 1.0", align="center", font="smallObliqueLabelFont")
 
         cmds.setParent('..')
+        cmds.setParent('..')
+
+        # Return to tab layout parent
         cmds.setParent('..')
 
     def _setup_selection_callback(self):
