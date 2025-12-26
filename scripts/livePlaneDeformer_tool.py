@@ -281,9 +281,6 @@ class LivePlaneDeformerTool:
         cmds.separator(height=20)
         cmds.text(label="Version 1.0", align="center", font="smallObliqueLabelFont")
 
-        cmds.setParent('..')
-        cmds.setParent('..')
-
         # Return to tab layout parent
         cmds.setParent('..')
 
