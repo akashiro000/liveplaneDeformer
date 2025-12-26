@@ -98,11 +98,6 @@ class LivePlaneDeformerTool:
         )
         cmds.setParent('..')
 
-        cmds.button(
-            label="Clear Target",
-            command=lambda x: self._clear_target_mesh()
-        )
-
         cmds.setParent('..')
         cmds.setParent('..')
 
@@ -128,8 +123,7 @@ class LivePlaneDeformerTool:
 
     def _create_parameters_tab(self):
         """Create the parameters tab"""
-        self.params_tab = cmds.scrollLayout(childResizable=True)
-        cmds.columnLayout(adjustableColumn=True, rowSpacing=10)
+        self.params_tab = cmds.columnLayout(adjustableColumn=True, rowSpacing=10)
 
         # Header
         cmds.text(label="Deformer Parameters", font="boldLabelFont", height=30)
@@ -226,8 +220,7 @@ class LivePlaneDeformerTool:
 
     def _create_info_tab(self):
         """Create the info tab"""
-        self.info_tab = cmds.scrollLayout(childResizable=True)
-        cmds.columnLayout(adjustableColumn=True, rowSpacing=10)
+        self.info_tab = cmds.columnLayout(adjustableColumn=True, rowSpacing=10)
 
         # Header
         cmds.text(label="About livePlaneDeformer", font="boldLabelFont", height=30)
@@ -352,7 +345,11 @@ class LivePlaneDeformerTool:
                 deformer = cmds.deformer(type='livePlaneDeformer')[0]
                 applied_deformers.append(deformer)
 
-                cmds.info(f"Applied {deformer} to {mesh}")
+                cmds.inViewMessage(
+                    amg=f"Applied {deformer} to {mesh}",
+                    pos='midCenter',
+                    fade=True
+                )
 
             except Exception as e:
                 cmds.warning(f"Failed to apply deformer to {mesh}: {str(e)}")
@@ -392,32 +389,15 @@ class LivePlaneDeformerTool:
                 force=True
             )
 
-            cmds.info(f"Connected {target_mesh} as target")
+            cmds.inViewMessage(
+                amg=f"Connected {target_mesh} as target",
+                pos='midCenter',
+                fade=True
+            )
             self._update_ui()
 
         except Exception as e:
             cmds.warning(f"Failed to set target mesh: {str(e)}")
-
-    def _clear_target_mesh(self):
-        """Clear target mesh connection"""
-        if not self.current_deformer:
-            return
-
-        try:
-            connections = cmds.listConnections(
-                f'{self.current_deformer}.targetMesh',
-                source=True,
-                destination=False,
-                plugs=True
-            )
-
-            if connections:
-                cmds.disconnectAttr(connections[0], f'{self.current_deformer}.targetMesh')
-                cmds.info("Target mesh cleared")
-                self._update_ui()
-
-        except Exception as e:
-            cmds.warning(f"Failed to clear target: {str(e)}")
 
     def _select_deformer_node(self):
         """Select the deformer node in the outliner"""
@@ -516,7 +496,11 @@ class LivePlaneDeformerTool:
             cmds.setAttr(f'{self.current_deformer}.envelope', 1.0)
 
             self._load_parameters()
-            cmds.info("Parameters reset to defaults")
+            cmds.inViewMessage(
+                amg="Parameters reset to defaults",
+                pos='midCenter',
+                fade=True
+            )
 
 
 # Global instance
