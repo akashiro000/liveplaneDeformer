@@ -1,0 +1,95 @@
+// AElivePlaneDeformerTemplate.mel
+// Attribute Editor template for livePlaneDeformer node
+
+global proc AElivePlaneDeformerTemplate( string $nodeName )
+{
+    editorTemplate -beginScrollLayout;
+
+    // Add standard deformer controls (envelope)
+    editorTemplate -beginLayout "Live Plane Deformer Attributes" -collapse 0;
+
+        // Target Mesh connection
+        editorTemplate -callCustom
+            "AElivePlaneDeformerTargetMeshNew"
+            "AElivePlaneDeformerTargetMeshReplace"
+            "targetMesh";
+
+        // Offset attribute
+        editorTemplate -addControl "offset";
+
+        // Lattice divisions
+        editorTemplate -addControl "divisionsU";
+        editorTemplate -addControl "divisionsV";
+        editorTemplate -addControl "divisionsW";
+
+    editorTemplate -endLayout;
+
+    // Add standard deformer attributes
+    AEdependNodeTemplate $nodeName;
+
+    // Add extra controls
+    editorTemplate -addExtraControls;
+
+    editorTemplate -endScrollLayout;
+}
+
+// Custom control to select target mesh
+global proc AElivePlaneDeformerTargetMeshNew( string $attr )
+{
+    setUITemplate -pushTemplate attributeEditorTemplate;
+
+    rowLayout -numberOfColumns 3 livePlaneDeformerTargetMeshRow;
+        text -label "Target Mesh";
+        textField -editable false -text "" livePlaneDeformerTargetMeshField;
+        button -label "Select" -command ("AElivePlaneDeformerSelectTargetMesh \"" + $attr + "\"") livePlaneDeformerTargetMeshButton;
+    setParent ..;
+
+    setUITemplate -popTemplate;
+
+    AElivePlaneDeformerTargetMeshReplace $attr;
+}
+
+global proc AElivePlaneDeformerTargetMeshReplace( string $attr )
+{
+    string $connections[] = `listConnections -shapes true $attr`;
+    string $meshName = "";
+
+    if (size($connections) > 0)
+    {
+        $meshName = $connections[0];
+    }
+
+    textField -edit -text $meshName livePlaneDeformerTargetMeshField;
+
+    button -edit
+        -command ("AElivePlaneDeformerSelectTargetMesh \"" + $attr + "\"")
+        livePlaneDeformerTargetMeshButton;
+}
+
+global proc AElivePlaneDeformerSelectTargetMesh( string $attr )
+{
+    string $selected[] = `ls -selection -type "transform"`;
+
+    if (size($selected) == 0)
+    {
+        warning "Please select a mesh object to use as target.";
+        return;
+    }
+
+    string $shapes[] = `listRelatives -shapes -type "mesh" $selected[0]`;
+
+    if (size($shapes) == 0)
+    {
+        warning "Selected object has no mesh shape.";
+        return;
+    }
+
+    // Connect the mesh to the target attribute
+    string $node = `plugNode $attr`;
+    connectAttr -force ($shapes[0] + ".outMesh") ($node + ".targetMesh");
+
+    // Update the UI
+    AElivePlaneDeformerTargetMeshReplace $attr;
+
+    print ("Connected " + $shapes[0] + " as target mesh.\n");
+}

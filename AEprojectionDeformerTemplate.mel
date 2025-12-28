@@ -1,0 +1,91 @@
+// AEprojectionDeformerTemplate.mel
+// Attribute Editor template for projectionDeformer node
+
+global proc AEprojectionDeformerTemplate( string $nodeName )
+{
+    editorTemplate -beginScrollLayout;
+
+    // Add standard deformer controls (envelope)
+    editorTemplate -beginLayout "Projection Deformer Attributes" -collapse 0;
+
+        // Target Mesh connection
+        editorTemplate -callCustom
+            "AEprojectionDeformerTargetMeshNew"
+            "AEprojectionDeformerTargetMeshReplace"
+            "targetMesh";
+
+        // Offset attributes
+        editorTemplate -addControl "offset";
+        editorTemplate -addControl "offsetNormal";
+
+    editorTemplate -endLayout;
+
+    // Add standard deformer attributes
+    AEdependNodeTemplate $nodeName;
+
+    // Add extra controls
+    editorTemplate -addExtraControls;
+
+    editorTemplate -endScrollLayout;
+}
+
+// Custom control to select target mesh
+global proc AEprojectionDeformerTargetMeshNew( string $attr )
+{
+    setUITemplate -pushTemplate attributeEditorTemplate;
+
+    rowLayout -numberOfColumns 3 projectionDeformerTargetMeshRow;
+        text -label "Target Mesh";
+        textField -editable false -text "" projectionDeformerTargetMeshField;
+        button -label "Select" -command ("AEprojectionDeformerSelectTargetMesh \"" + $attr + "\"") projectionDeformerTargetMeshButton;
+    setParent ..;
+
+    setUITemplate -popTemplate;
+
+    AEprojectionDeformerTargetMeshReplace $attr;
+}
+
+global proc AEprojectionDeformerTargetMeshReplace( string $attr )
+{
+    string $connections[] = `listConnections -shapes true $attr`;
+    string $meshName = "";
+
+    if (size($connections) > 0)
+    {
+        $meshName = $connections[0];
+    }
+
+    textField -edit -text $meshName projectionDeformerTargetMeshField;
+
+    button -edit
+        -command ("AEprojectionDeformerSelectTargetMesh \"" + $attr + "\"")
+        projectionDeformerTargetMeshButton;
+}
+
+global proc AEprojectionDeformerSelectTargetMesh( string $attr )
+{
+    string $selected[] = `ls -selection -type "transform"`;
+
+    if (size($selected) == 0)
+    {
+        warning "Please select a mesh object to use as target.";
+        return;
+    }
+
+    string $shapes[] = `listRelatives -shapes -type "mesh" $selected[0]`;
+
+    if (size($shapes) == 0)
+    {
+        warning "Selected object has no mesh shape.";
+        return;
+    }
+
+    // Connect the mesh to the target attribute
+    string $node = `plugNode $attr`;
+    connectAttr -force ($shapes[0] + ".outMesh") ($node + ".targetMesh");
+
+    // Update the UI
+    AEprojectionDeformerTargetMeshReplace $attr;
+
+    print ("Connected " + $shapes[0] + " as target mesh.\n");
+}
